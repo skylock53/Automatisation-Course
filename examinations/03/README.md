@@ -121,9 +121,13 @@ Run the exact same playbook again and study the output. What is the difference?
 
 What does the `ansible.builtin.debug` module actually do?
 
+- The `ansible.builtin.debug` module prints statements during execution and can be useful for debugging variables or expressions without necessarily halting the playbook.
+
 ## QUESTION B
 
 What is the variable 'ansible_facts' and where does it come from?
+
+- 'ansible_facts' is a special variable that collects and states a fact when executed. In this case we have paired it with '.nodename' which in this case states the two machines names - dbserver and webserver. It comes from the "setup" module in Ansible. The module "ansible.builtin.setups" is executed everytime you run a playbook, it collects system information and saves it in 'ansible_facts'.
 
 ## QUESTION C
 
@@ -134,14 +138,25 @@ How do we now remove the software we installed through the playbook above? Make 
 playbook remove the exact same software we previously installed. Call the created
 playbook `03-uninstall-software.yml`.
 
+- To begin with, I created the `03-uninstall-software.yml` file. Then I used nano as my texteditor to type in the exact same script as previously with reservation for state. I also removed 'installed' from row 4 and replaced it with 'removed'. The state was replaced with 'absent', previously 'present'. Lastly I ran the script using ansible-playbook.
+
 ## BONUS QUESTION
 
 What happens when you run `ansible-playbook` with different options?
 
 Explain what each of these options do:
 * --verbose, -vv, -vvv, -vvvv
+- Causes Ansible to print more debug messages. The increasing V:s in the command should grant you more details, depending on how many V:s you use. Here is a representation of what I mean:
+
+-vv: Grants you debugging details.
+-vvv: Grants you even more debugging details.
+So on and so forth.
+
 * --check
+- You use this to predict changes. The changes will not be made, but they will be listed as potential changes if you want to proceed with them.
+
 * --syntax-check
+- This one performs a syntax check on the playbook, but does not execute it.
 
 ## Study Material & Documentation
 
