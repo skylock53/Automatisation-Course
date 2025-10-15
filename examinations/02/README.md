@@ -112,9 +112,13 @@ incompatibilities.
 
 What happens if you run `ansible-inventory --list` in the directory you created above?
 
+- You list the inventory and what the inventory contains. Here you can for example see the ip addresses for both of your hosts, db and web.
+
 ## QUESTION B
 
 What happens if you run `ansible-inventory --graph` in the directory you created above?
+
+- You get a visual graph that describes the relationship between the two hosts. Their ip addresses are also included.
 
 ## QUESTION C
 
@@ -131,6 +135,8 @@ Now run:
 Study the output of this command.
 
 What does the `ansible_connection=local` part mean?
+
+- It is a way to force Ansible to use the "local" connection plugin to execute tasks on the target host, ignoring the default connection method like SSH. In this case we are pinging our local machine.
 
 ## BONUS QUESTION
 
@@ -152,4 +158,6 @@ In your Ansible working directory where the `ansible.cfg' is, run
 
 You should get a pager displaying all available configuration values. How does it differ
 from when you run the same command in your usual home directory?
+
+- When I run 'ansible-config dump' in my ansible directory I can see the path to my ansible configuration file: 'CONFIG_FILE() = /home/skylock53/ansible/ansible.cfg'. This means the local ansible.cfg file is being used and overrides global or default settings. When I instead run the same command in the usual home directory there is neither an ansible configuration file nor does it have a path.
 
