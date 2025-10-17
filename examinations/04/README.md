@@ -53,12 +53,16 @@ module.
 
 How can we make the web server start with an addition of just one line to the playbook above?
 
+- Add 'state: started' to the playbook. This ensures that nginx starts right away instead of waiting for the next boot. After that you execute 'ansible-playbook webserver.yml' for the changes to be made. Lastly you curl again.
+
 # QUESTION B
 
 You make have noted that the `become: true` statement has moved from a specific task to the beginning
 of the playbook, and is on the same indentation level as `tasks:`.
 
 What does this accomplish?
+
+- This ensures that the 'become: true' statement is activated for all the tasks in the playbook, rather than only one of them. This makes it more effective in terms of not having to add the same statement to other tasks.
 
 # QUESTION C
 
@@ -72,8 +76,29 @@ log in to the machine and make sure that there are no `nginx` processes running.
 
 Why did we change the order of the tasks in the `04-uninstall-webserver.yml` playbook?
 
+- I changed the order to this:
+---
+    - name: Install a webserver
+      hosts: web
+      become: true
+      tasks:
+
+        - name: Ensure nginx is stopped
+          ansible.builtin.service:
+            name: nginx
+            state: stopped
+
+        - name: Ensure nginx is uninstalled
+          ansible.builtin.package:
+            name: nginx
+            state: absent
+
+We first need to either stop or start the service, and then we can make sure to uninstall the package. Needs to be done in this order.
+
 # BONUS QUESTION
 
 Consider the output from the tasks above, and what we were actually doing on the machine.
 
 What is a good naming convention for tasks? (What SHOULD we write in the `name:` field`?)
+
+- The first playbooks tasks (03) helps us install and start nginx. The second playbooks tasks (04) helps us stop and uninstall nginx. So a good name convention for the first playbook would be 'name: Install and start nginx' and for the second playbook 'name: Stop and uninstall nginx'.You can even divide it into seperate conventions: 'name: Ensure nginx is installed', 'name: Ensure nginx is started at boot', 'name: Ensure nginx is stopped' and 'name: Ensure nginx is uninstalled'.
