@@ -45,7 +45,7 @@ See if you now can resolve the name `example.internal`:
     $ ping -c 1 example.internal
     PING example.internal (192.168.121.10) 56(84) bytes of data.
     64 bytes from example.internal (192.168.121.10): icmp_seq=1 ttl=64 time=0.446 ms
-    
+
     --- example.internal ping statistics ---
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 0.446/0.446/0.446/0.000 ms
@@ -119,6 +119,59 @@ HINTS:
   also set the correct SELinux security context type on the directory and files. The context in question
   in this case should be `httpd_sys_content_t` for the `/var/www/example.internal/html/` directory.
 
+- This is how my 06-web.yml playbook looks:
+
+---
+- name: Copy the local files/https.conf file to /etc/nginx/conf.d/https.conf
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Copy files/https.conf file to /etc/nginx/conf.d/https.conf
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+
+    - name: Ensure the nginx configuration is updated for example.internal
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+
+    - name: Create directory structure
+      ansible.builtin.file:
+        path: /var/www/example.internal/html/
+        state: directory
+        setype: httpd_sys_content_t
+
+    - name: Copy files/index.html to /var/www/example.internal/html/index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        setype: httpd_sys_content_t
+
+    - name: Restart service nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+
+    - name: Ensure nginx is started at boot
+      ansible.builtin.service:
+        name: nginx
+        enabled: true
+        state: started
+
+I have also verified if the directory was created in the webserver with the index.html file:
+
+[vagrant@webserver html]$ realpath index.html
+/var/www/example.internal/html/index.html
+
+[deploy@webserver html]$ realpath index.html
+/var/www/example.internal/html/index.html
+
 # QUESTION B
 
 To each of the tasks that change configuration files in the webserver, add a `register: [variable_name]`.
@@ -167,6 +220,56 @@ There are several ways to accomplish this, and there is no _best_ way to do this
 
 Is this a good way to handle these types of conditionals? What do you think?
 
+- This is my playbook for this question:
+
+---
+- name: Copy the local files/https.conf file to /etc/nginx/conf.d/https.conf
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Copy files/https.conf file to /etc/nginx/conf.d/https.conf
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+      register: result_https_conf
+
+    - name: Ensure the nginx configuration is updated for example.internal
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+      register: result_internal_conf
+
+    - name: Create directory structure
+      ansible.builtin.file:
+        path: /var/www/example.internal/html/
+        state: directory
+        setype: httpd_sys_content_t
+
+    - name: Copy files/index.html to /var/www/example.internal/html/index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        setype: httpd_sys_content_t
+
+    - name: Restart service nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: result_https_conf.changed or result_internal_conf.changed
+
+    - name: Ensure nginx is started at boot
+      ansible.builtin.service:
+        name: nginx
+        enabled: true
+        state: started
+
+To answer the question, yes this is a very good solution. What we just did is a prime example of idempotency in Ansible. This way we avoid unnecessary restarts if nothing has changed in the configuration files. This also reduce the downtime when executing the playbook without any changes in the configuration files.
+
 # BONUS QUESTION
 
 Imagine you had a playbook with hundreds of tasks to be done on several hosts, and each one of these tasks
@@ -177,3 +280,5 @@ would you like the flow to work?
 
 Describe in simple terms what your preferred task flow would look like, not necessarily implemented in
 Ansible, but in general terms.
+
+- I would let all configuration changes happen first, mark which services need a restart, and then restart or reload them only once at the and, only if necessary. This reduces downtime, avoids unnecessary restarts, and keeps the system more stable.
