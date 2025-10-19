@@ -29,5 +29,45 @@ to authenticate as root:
 * Since we're authenticating through a socket, we should ignore the requirement for a `~/.my.cnf` file.
 * For simplicity's sake, let's grant `ALL` privileges on `webapp.*` to `webappuser`
 
+- I started of by copying my previous playbook to this playbook. After that I added three tasks: one for creating a database instance, one for creating a database user and lastly a task for installing Python in my database. I could not proceed without installing Python into the database because of the communication between Ansible and MariaDB. I did all this with the help of Ansibles modules documentation on their website.
+
+This is how my playbook is looking:
+
+---
+- name: Install and start mariadb-server
+  hosts: db
+  become: true
+  tasks:
+    - name: Ensure MariaDB-server is installed.
+      ansible.builtin.package:
+        name: mariadb-server
+        state: present
+
+    - name: Ensure mariadb-server is enabled and started
+      ansible.builtin.service:
+        name: mariadb
+        enabled: true
+        state: started
+
+    - name: Install PyMySQL so Ansible can talk to MariaDB
+      ansible.builtin.package:
+        name: python3-PyMySQL
+        state: present
+
+    - name: Create database instance
+      community.mysql.mysql_db:
+        name: webappdb
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create database user
+      community.mysql.mysql_user:
+        name: webappuser
+        login_password: secretpassword
+        priv: '*.*:ALL'
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        state: present
+
+
 # Documentation and Examples
 https://docs.ansible.com/ansible/latest/collections/community/mysql/index.html
