@@ -28,6 +28,57 @@ address of the virtual machine itself.
 
 Use the `ansible.builtin.template` module to accomplish this task.
 
+- My finished playbook:
+
+---
+- name: Copy the local files/https.conf file to /etc/nginx/conf.d/https.conf
+  hosts: web
+  become: true
+  vars:
+
+    listen_address: "192.168.121.135"
+
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Deploy templated nginx config for example.internal
+      ansible.builtin.template:
+        src: templates/example.internal.conf.j2
+        dest: /etc/nginx/conf.d/example.internal.conf
+        mode: '0644'
+      notify: Reload nginx to apply new template conf
+
+    - name: Create directory structure
+      ansible.builtin.file:
+        path: /var/www/example.internal/html/
+        state: directory
+        setype: httpd_sys_content_t
+        mode: '0644'
+
+    - name: Copy files/index.html to /var/www/example.internal/html/index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        setype: httpd_sys_content_t
+        mode: '0644'
+
+    - name: Ensure nginx is started at boot
+      ansible.builtin.service:
+        name: nginx
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Reload nginx to apply new template conf
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+
+Main things I have added in this playbook: "Notify", "handlers", "vars" and "Deploy templated nginx ...." task. I have used notify and handlers because of unneccesary downtime. Handlers run last after the playbook has run, and the "notify" lets the "handlers" know if a change has happened in the templated config file. If a change is made then the handler will run, and in this case reload nginx to apply new template configuration. "Vars" works like a variable where you store something, in this case the external IP address for the webserver. "Listen address:" is refered to the "example.internal.conf.j2" file.
+
 # Resources and Documentation
 
 * https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html
