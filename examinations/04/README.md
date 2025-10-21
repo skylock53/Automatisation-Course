@@ -78,20 +78,20 @@ Why did we change the order of the tasks in the `04-uninstall-webserver.yml` pla
 
 - I changed the order to this:
 ---
-    - name: Install a webserver
-      hosts: web
-      become: true
-      tasks:
+- name: Install a webserver
+  hosts: web
+  become: true
+  tasks:
 
-        - name: Ensure nginx is stopped
-          ansible.builtin.service:
-            name: nginx
-            state: stopped
+    - name: Ensure nginx is stopped
+      ansible.builtin.service:
+        name: nginx
+        state: stopped
 
-        - name: Ensure nginx is uninstalled
-          ansible.builtin.package:
-            name: nginx
-            state: absent
+    - name: Ensure nginx is uninstalled
+      ansible.builtin.package:
+        name: nginx
+        state: absent
 
 We first need to either stop or start the service, and then we can make sure to uninstall the package. Needs to be done in this order.
 
