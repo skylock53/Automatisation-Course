@@ -62,7 +62,7 @@ instead of as a plain text string in the playbook.
         login_unix_socket: /var/lib/mysql/mysql.sock
         state: present
 
-First I created a passwordfile.yml where I stored my password. Then I encrypted it with 'ansible-vault encrypt passwordfile.yml'. I chose a Vault password 'q'. I proceeded to cat passwordfile.yml which gave me my encrypted file. Lastly I replaced the string password with the Ansible Vault encrypted file password.
+First I created a passwordfile.yml where I stored my password. Then I encrypted it with 'ansible-vault encrypt passwordfile.yml'. I chose a Vault password 'q'. I proceeded to cat passwordfile.yml which gave me my encrypted file. Lastly I replaced the string password with the Ansible Vault encrypted file password in the playbook.
 
 
 # QUESTION B
