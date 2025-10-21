@@ -236,12 +236,14 @@ Is this a good way to handle these types of conditionals? What do you think?
       ansible.builtin.copy:
         src: files/https.conf
         dest: /etc/nginx/conf.d/https.conf
+        mode: '0644'
       register: result_https_conf
 
     - name: Ensure the nginx configuration is updated for example.internal
       ansible.builtin.copy:
         src: files/example.internal.conf
         dest: /etc/nginx/conf.d/example.internal.conf
+        mode: '0644'
       register: result_internal_conf
 
     - name: Create directory structure
@@ -249,12 +251,14 @@ Is this a good way to handle these types of conditionals? What do you think?
         path: /var/www/example.internal/html/
         state: directory
         setype: httpd_sys_content_t
+        mode: '0644'
 
     - name: Copy files/index.html to /var/www/example.internal/html/index.html
       ansible.builtin.copy:
         src: files/index.html
         dest: /var/www/example.internal/html/index.html
         setype: httpd_sys_content_t
+        mode: '0644'
 
     - name: Restart service nginx
       ansible.builtin.service:
