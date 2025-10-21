@@ -74,6 +74,35 @@ a number of keys and values that come from the output of the Ansible module.
 
 What does the output look like the first time you run this playbook?
 
+- My playbook looks like this:
+
+---
+- name: Copy the local files/https.conf file to /etc/nginx/conf.d/https.conf
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Copy files/https.conf file to /etc/nginx/conf.d/https.conf
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        mode: '0644'
+
+    - name: Restart service nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+
+    - name: Ensure nginx is started at boot
+      ansible.builtin.service:
+        name: nginx
+        enabled: true
+        state: started
+
 - ➜  ansible ansible-playbook -v 05-web.yml
 Using /home/skylock53/ansible/ansible.cfg as config file
 
