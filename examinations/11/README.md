@@ -38,6 +38,24 @@ When your playbook is run, one should be able to do this on the webserver:
 
 There are multiple ways to accomplish this, but keep in mind _idempotency_ and _maintainability_.
 
+---
+- name: Create users and add them to their groups
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Add users to their groups
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups }}"
+        append: true
+        state: present
+      loop:
+        - {name: "alovelace", groups: "wheel,video,audio"}
+        - {name: "aturing", groups: "tape"}
+        - {name: "edijkstra", groups: "tcpdump"}
+        - {name: "ghopper", groups: "wheel,audio"}
+
 # QUESTION B
 
 Write a playbook that uses
@@ -50,12 +68,47 @@ For now you can create empty files in the `files/` directory called anything as 
 
     $ touch files/foo.md files/bar.md files/baz.md
 
+--
+- name: Copy all the '\*.md' files to 'deploy' user's directory
+  hosts: db
+  become: true
+  tasks:
+    - name: Copy each file over that matches the given pattern
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /home/deploy
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      with_fileglob:
+        - 'files/*.md'
+
+
 # BONUS QUESTION
 
 Add a password to each user added to the playbook that creates the users. Do not write passwords in plain
 text in the playbook, but use the password hash, or encrypt the passwords using `ansible-vault`.
 
 There are various utilities that can output hashed passwords, check the FAQ for some pointers.
+
+---
+- name: Create users and add them to their groups
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Add users with their groups
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups }}"
+        append: true
+        state: present
+        password: "{{ item.password }}"
+      loop:
+        - {name: "alovelace", groups: "wheel,video,audio", password: "$6$rounds=656000$salt1$kT5FYBCPAO4ii3Yx8zFCM8gB3cLufVWPRBnXVDtPweZdkjyWr/px4J7FnVV7SAHbKOWeXZtTENrq7bdIG5tUr0"}
+        - {name: "aturing", groups: "tape", password: "$6$rounds=656000$salt2$alTmmNCl9o1B7DtkO7IIFlSNjuiDNB17cm.xYk2A71uqVQ.2UJIJoLJrOPFCIliHX/xE2x2tJOEhAWvU8Mi4h/"}
+        - {name: "edijkstra", groups: "tcpdump", password: "$6$rounds=656000$salt3$NFBVhdSb3bNdoIm8jVnwbMjEINOHWfeo5fJLjStLD0.xK.kfOKpCevjG17d2FpokXdZ83EvFfKfiSwkPH08F8."}
+        - {name: "ghopper", groups: "wheel,audio", password: "$6$rounds=656000$salt4$yLL4idgjdVc4jyFrIuRrYJ8E4itY7tAsaUrwEO09bEMdAT0xhXvkl4Z6ghXKRxSNQMhS7W2VUXlwztrmJ3Lpx0"}
 
 # BONUS BONUS QUESTION
 
