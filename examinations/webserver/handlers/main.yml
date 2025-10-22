@@ -1,0 +1,6 @@
+---
+- name: Reload nginx to apply new template conf
+  become: true
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded

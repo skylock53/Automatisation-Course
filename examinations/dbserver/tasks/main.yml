@@ -1,0 +1,64 @@
+---
+- name: Ensure vim, bash-completion, and qemu-guest-agent are removed
+  become: true
+  ansible.builtin.package:
+    name: vim,bash-completion,qemu-guest-agent
+    state: absent
+
+- name: Ensure MariaDB-server is installed.
+  become: true
+  ansible.builtin.package:
+    name: mariadb-server
+    state: present
+
+- name: Ensure mariadb-server is enabled and started
+  become: true
+  ansible.builtin.service:
+    name: mariadb
+    enabled: true
+    state: started
+
+- name: Install PyMySQL so Ansible can talk to MariaDB
+  become: true
+  ansible.builtin.package:
+    name: python3-PyMySQL
+    state: present
+
+- name: Create database instance
+  become: true
+  community.mysql.mysql_db:
+    name: webappdb
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+
+- name: Create database user
+  become: true
+  community.mysql.mysql_user:
+    name: webappuser
+    password: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      61356561333934623661333139656232616563613731323863376461623062363739636438306561
+      6263373733393166343239303137373662636361356564320a366539613363653937376265306239
+      31373330643866343032613131363938613034303965643465353133363936353866336263393265
+      6432333632363836300a626433303663336263323135623465633938326137383136373838616561
+      3731
+    priv: "*.*:ALL"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Install PyMySQL so Ansible can talk to MariaDB
+  become: true
+  ansible.builtin.package:
+    name: python3-PyMySQL
+    state: present
+
+- name: Copy each file over that matches the given pattern
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /home/deploy
+    owner: deploy
+    group: deploy
+    mode: '0644'
+  with_fileglob:
+    - 'files/*.md'

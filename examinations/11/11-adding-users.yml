@@ -1,0 +1,18 @@
+---
+- name: Create users and add them to their groups
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Add users with their groups
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups }}"
+        append: true
+        state: present
+        password: "{{ item.password }}"
+      loop:
+        - {name: "alovelace", groups: "wheel,video,audio", password: "$6$rounds=656000$salt1$kT5FYBCPAO4ii3Yx8zFCM8gB3cLufVWPRBnXVDtPweZdkjyWr/px4J7FnVV7SAHbKOWeXZtTENrq7bdIG5tUr0"}
+        - {name: "aturing", groups: "tape", password: "$6$rounds=656000$salt2$alTmmNCl9o1B7DtkO7IIFlSNjuiDNB17cm.xYk2A71uqVQ.2UJIJoLJrOPFCIliHX/xE2x2tJOEhAWvU8Mi4h/"}
+        - {name: "edijkstra", groups: "tcpdump", password: "$6$rounds=656000$salt3$NFBVhdSb3bNdoIm8jVnwbMjEINOHWfeo5fJLjStLD0.xK.kfOKpCevjG17d2FpokXdZ83EvFfKfiSwkPH08F8."}
+        - {name: "ghopper", groups: "wheel,audio", password: "$6$rounds=656000$salt4$yLL4idgjdVc4jyFrIuRrYJ8E4itY7tAsaUrwEO09bEMdAT0xhXvkl4Z6ghXKRxSNQMhS7W2VUXlwztrmJ3Lpx0"}
