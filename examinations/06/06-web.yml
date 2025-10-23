@@ -27,7 +27,7 @@
         path: /var/www/example.internal/html/
         state: directory
         setype: httpd_sys_content_t
-        mode: '0644'
+        mode: '0755'
 
     - name: Copy files/index.html to /var/www/example.internal/html/index.html
       ansible.builtin.copy:
