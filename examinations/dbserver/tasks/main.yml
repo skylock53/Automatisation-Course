@@ -1,9 +1,9 @@
 ---
-- name: Ensure vim, bash-completion, and qemu-guest-agent are removed
+- name: Ensure vim, bash-completion, and qemu-guest-agent are running
   become: true
   ansible.builtin.package:
     name: vim,bash-completion,qemu-guest-agent
-    state: absent
+    state: present
 
 - name: Ensure MariaDB-server is installed.
   become: true
@@ -59,6 +59,6 @@
     dest: /home/deploy
     owner: deploy
     group: deploy
-    mode: '0644'
+    mode: "0644"
   with_fileglob:
-    - 'files/*.md'
+    - "files/*.md"
